@@ -5,7 +5,7 @@ import { ChatInput, Message, Wrapper } from './components.tsx';
 import './tailwind.css';
 
 const App = () => {
-  const { messages, sendMessage } = useChat({});
+  const { messages, sendMessage, status } = useChat({});
 
   const [input, setInput] = useState(
     'Could you describe this image?',
@@ -23,6 +23,8 @@ const App = () => {
           parts={message.parts}
         />
       ))}
+      <strong>Status: {status}</strong>
+      <br />
       <ChatInput
         input={input}
         onInputChange={(e) => setInput(e.target.value)}
@@ -45,8 +47,17 @@ const App = () => {
           // convert the file to a data URL. This
           // will be useful!
           sendMessage({
-            // NOTE: 'parts' will be useful
-            text: input,
+            parts: [
+              {
+                type: 'text',
+                text: input,
+              },
+              {
+                type: 'file',
+                mediaType: file.type,
+                url: await fileToDataURL(file),
+              },
+            ],
           });
 
           setInput('');

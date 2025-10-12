@@ -10,10 +10,16 @@ import {
 export const POST = async (req: Request): Promise<Response> => {
   const body = await req.json();
 
+  // TODO: get the UIMessage[] from the body
   const messages: UIMessage[] = body.messages;
+  console.log('ep:', 'messages');
+  console.dir(messages, { depth: null });
 
+  // TODO: convert the UIMessage[] to ModelMessage[]
   const modelMessages: ModelMessage[] =
     convertToModelMessages(messages);
+  console.log('ep:', 'modelMessages');
+  console.dir(modelMessages, { depth: null });
 
   const streamTextResult = streamText({
     model: google('gemini-2.0-flash'),
