@@ -9,5 +9,11 @@ const stream = streamText({
 });
 
 for await (const chunk of stream.toUIMessageStream()) {
-  console.log(chunk);
+  // And object will be logged to the console for each chunk
+  console.log(1, chunk);
+}
+
+for await (const chunk of stream.textStream) {
+  // Just the text will be logged to the console for each chunk
+  console.log(2, chunk);
 }
