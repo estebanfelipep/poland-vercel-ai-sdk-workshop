@@ -47,6 +47,7 @@ export const POST = async (req: Request): Promise<Response> => {
 
   return result.toUIMessageStreamResponse({
     onFinish: async () => {
+      console.log('ep:', '-------Stream finished');
       await mcpClient.close();
     },
   });
