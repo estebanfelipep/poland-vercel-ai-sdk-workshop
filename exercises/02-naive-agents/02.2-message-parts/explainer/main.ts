@@ -125,5 +125,5 @@ const stream = result.toUIMessageStream({
 console.log('--- STREAM ---');
 
 for await (const message of stream) {
-  console.log(message);
+  console.log('ep', message);
 }
