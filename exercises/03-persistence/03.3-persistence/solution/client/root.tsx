@@ -12,6 +12,7 @@ import './tailwind.css';
 import { BrowserRouter, useSearchParams } from 'react-router';
 
 const App = () => {
+  // Going with this approach to have a backup chat id might be confusing and hard to manage
   const [backupChatId, setBackupChatId] = useState(
     crypto.randomUUID(),
   );
@@ -64,7 +65,7 @@ const App = () => {
             return;
           }
 
-          // Refresh the backup chat id
+          // This is not right because it will cause a new chat id and render
           setBackupChatId(crypto.randomUUID());
           setSearchParams({ chatId: backupChatId });
         }}

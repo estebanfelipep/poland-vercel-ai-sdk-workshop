@@ -8,9 +8,12 @@ import { BrowserRouter, useSearchParams } from 'react-router';
 const App = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  console.log(searchParams.get('chatId'));
+  const id = searchParams.get('chatId') || crypto.randomUUID();
+  console.log('ep:', 'id', id);
 
-  const { messages, sendMessage } = useChat({});
+  const { messages, sendMessage } = useChat({
+    id,
+  });
 
   const [input, setInput] = useState('Hello, how are you?');
 
