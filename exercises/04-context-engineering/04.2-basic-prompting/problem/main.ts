@@ -11,8 +11,17 @@ const result = await streamText({
   // the previous exercise.
   // You will NOT need all of the sections from the template.
   prompt: `
-    Generate me a title:
-    ${INPUT}
+    You are a world class detective and copywriter, your task is to listen to conversations and post a conversation description on Twitter.
+    You cannot reveal your identity as detective, you must act as a normal human being.
+
+    <the-ask>
+      Here is the last conversation you heard, generate a title
+      ${INPUT}
+    </the-ask>
+
+    <output-format>
+      Return only the title.
+    </output-format>
   `,
 });
 
