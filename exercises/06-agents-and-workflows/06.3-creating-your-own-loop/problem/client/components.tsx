@@ -19,13 +19,10 @@ export const Message = ({
   role: string;
   parts: MyMessage['parts'];
 }) => {
-  console.log('ep:', { parts });
-
   return (
     <div className="my-4">
       {parts.map((part) => {
         if (part.type === 'data-slack-message') {
-          console.log('ep:', { MessagePartId: part.id });
           return (
             <div key={part.id} className="mb-4">
               <h2 className="text-gray-300 text-sm mb-1">
@@ -58,6 +55,8 @@ export const Message = ({
                 parts
                   .map((part) => {
                     if (part.type === 'text') {
+                      console.log('ep:', part.text);
+
                       return part.text;
                     }
                     return '';
