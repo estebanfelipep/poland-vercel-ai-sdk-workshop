@@ -76,7 +76,17 @@ export const POST = async (req: Request): Promise<Response> => {
 
       // TODO: Slice the search results to the top 30
       // TODO: Add an ID to each result (just a number: use the index of the array)
-      const topSearchResultsWithId = TODO;
+      const topSearchResultsWithId = searchResults
+        .slice(0, 30)
+        .map((result, index) => ({
+          ...result,
+          id: index,
+        }));
+
+      console.log(
+        'ep: Before LLM - topSearchResults filename',
+        topSearchResultsWithId.map((result) => result.filename),
+      );
 
       const topSearchResultsAsText = topSearchResultsWithId
         .map((result) =>
@@ -97,7 +107,26 @@ export const POST = async (req: Request): Promise<Response> => {
       // Return the IDs of the most relevant search results - NOT
       // all the content. No need to waste tokens returning all
       // the content too.
-      const rerankedSearchResults = TODO;
+      const rerankedSearchResults = await generateObject({
+        model: google('gemini-2.0-flash-001'),
+        system: RERANKER_SYSTEM_PROMPT,
+        schema: z.object({
+          resultIds: z
+            .array(z.number())
+            .describe(
+              'Array of IDs for the most relevant documentation pages',
+            ),
+        }),
+        prompt: `
+          Search query:
+          ${keywords.object.searchQuery}
+          
+          Available documentation pages:
+          ${topSearchResultsAsText}
+          
+          Return only the IDs of the most relevant pages for answering the user's question.
+        `,
+      });
 
       const topSearchResultsAsMap = new Map(
         topSearchResultsWithId.map((result) => [
@@ -111,11 +140,15 @@ export const POST = async (req: Request): Promise<Response> => {
           .map((id) => topSearchResultsAsMap.get(id))
           .filter((result) => result !== undefined);
 
-      console.dir(
+      console.log(
+        'ep: llm - topSearchResults | length',
+        rerankedSearchResults.object.resultIds.length,
+        topSearchResults.length,
+      );
+
+      console.log(
+        'ep: final topSearchResults',
         topSearchResults.map((result) => result.filename),
-        {
-          depth: null,
-        },
       );
 
       const answer = streamText({
