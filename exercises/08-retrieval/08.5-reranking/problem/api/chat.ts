@@ -157,6 +157,8 @@ export const POST = async (req: Request): Promise<Response> => {
           You should use the provided documentation snippets to answer questions accurately.
           ALWAYS cite sources using markdown formatting with the filename as the source.
           Be concise but thorough in your explanations.
+          Do not give examples unless explicitly asked.
+          Sacrifice grammar and style for clarity and conciseness.
         `,
         prompt: [
           '## Conversation History',
@@ -177,6 +179,16 @@ export const POST = async (req: Request): Promise<Response> => {
           '## Instructions',
           "Based on the TypeScript documentation above, please answer the user's question. Always cite your sources using the filename in markdown format.",
         ].join('\n\n'),
+        onFinish: ({ usage }) => {
+          const { totalTokens, outputTokens, inputTokens } =
+            usage;
+
+          console.log('ep:', {
+            totalTokens,
+            outputTokens,
+            inputTokens,
+          });
+        },
       });
 
       writer.merge(answer.toUIMessageStream());

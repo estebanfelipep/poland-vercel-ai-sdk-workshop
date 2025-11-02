@@ -27,6 +27,15 @@ export const POST = async (req: Request): Promise<Response> => {
     model: google('gemini-2.0-flash'),
     messages: modelMessages,
     system: SYSTEM_PROMPT,
+    onFinish: ({ usage }) => {
+      const { totalTokens, outputTokens, inputTokens } = usage;
+
+      console.log('ep:', {
+        totalTokens,
+        outputTokens,
+        inputTokens,
+      });
+    },
   });
 
   const stream = streamTextResult.toUIMessageStream();
