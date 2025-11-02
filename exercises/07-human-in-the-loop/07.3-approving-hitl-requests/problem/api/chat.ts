@@ -103,9 +103,24 @@ export const POST = async (req: Request): Promise<Response> => {
           stepCountIs(10),
           hasToolCall('askToSendEmail'),
         ],
+        onFinish: ({ response }) => {
+          console.log(
+            'ep: responseMessages',
+            response.messages.length,
+          );
+          // console.dir(response.messages, { depth: null });
+        },
       });
 
       writer.merge(streamTextResponse.toUIMessageStream());
+    },
+    originalMessages: messages,
+    onFinish: ({ messages, responseMessage }) => {
+      console.log('ep: responseMessage - final');
+      // console.dir(responseMessage, { depth: null });
+
+      console.log('ep: messages - final', messages.length);
+      // console.dir(messages, { depth: null });
     },
   });
 
