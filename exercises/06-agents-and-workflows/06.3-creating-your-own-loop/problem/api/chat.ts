@@ -174,11 +174,7 @@ export const POST = async (req: Request): Promise<Response> => {
         id: textPartId,
       });
 
-      let content = '';
-
       for await (const part of finalMessageResult.textStream) {
-        content += part;
-
         await new Promise((resolve) =>
           setTimeout(resolve, 2000),
         );

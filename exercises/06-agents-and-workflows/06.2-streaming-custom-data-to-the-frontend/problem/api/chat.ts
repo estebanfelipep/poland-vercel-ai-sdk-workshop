@@ -148,14 +148,10 @@ export const POST = async (req: Request): Promise<Response> => {
         id: textPartId,
       });
 
-      let content = '';
-
       for await (const part of finalSlackAttempt.textStream) {
-        content += part;
-
         writer.write({
           type: 'text-delta',
-          delta: content,
+          delta: part,
           id: textPartId,
         });
       }
