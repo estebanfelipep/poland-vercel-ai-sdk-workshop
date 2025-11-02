@@ -33,12 +33,11 @@ export type MyMessage = UIMessage<
     'action-start': {
       action: Action;
     };
-    // TODO: declare an action-decision part that
-    // contains the decision made by the user. Use
-    // the ActionDecision type for the decision.
-    // You'll also need an actionId field, which
-    // references the action that the decision is for.
-    'action-decision': TODO;
+    'action-decision': {
+      // The original action ID that this decision is for.
+      actionId: string;
+      decision: ActionDecision;
+    };
   }
 >;
 
@@ -46,7 +45,7 @@ export const POST = async (req: Request): Promise<Response> => {
   const body: { messages: MyMessage[] } = await req.json();
   const { messages } = body;
 
-  console.dir(messages[messages.length - 1], { depth: null });
+  // console.dir(messages[messages.length - 1], { depth: null });
 
   const stream = createUIMessageStream<MyMessage>({
     execute: async ({ writer }) => {
@@ -56,11 +55,26 @@ export const POST = async (req: Request): Promise<Response> => {
           You are a helpful assistant that can send emails.
           You will be given a diary of the conversation so far.
           The user's name is "John Doe".
+
+           YOU MUST ALWAYS WAIT FOR THE USER TO APPROVE BEFORE SENDING AN EMAIL.
         `,
         messages: convertToModelMessages(messages),
         tools: {
           sendEmail: {
             description: 'Send an email',
+            inputSchema: z.object({
+              to: z.string(),
+              subject: z.string(),
+              content: z.string(),
+            }),
+            execute: ({ to, subject, content }) => {
+              console.log('ep:', 'called sendEmail');
+
+              return 'Email sent';
+            },
+          },
+          askToSendEmail: {
+            description: 'Asks if an email should be sent',
             inputSchema: z.object({
               to: z.string(),
               subject: z.string(),
@@ -79,12 +93,16 @@ export const POST = async (req: Request): Promise<Response> => {
                   },
                 },
               });
+              console.log('ep:', 'ASK EMAIL REQUEST');
 
               return 'Email sent';
             },
           },
         },
-        stopWhen: [stepCountIs(10), hasToolCall('sendEmail')],
+        stopWhen: [
+          stepCountIs(10),
+          hasToolCall('askToSendEmail'),
+        ],
       });
 
       writer.merge(streamTextResponse.toUIMessageStream());
