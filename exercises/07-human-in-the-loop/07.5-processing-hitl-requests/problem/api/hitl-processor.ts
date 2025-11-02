@@ -21,7 +21,7 @@ export const findDecisionsToProcess = (opts: {
   const { mostRecentUserMessage, mostRecentAssistantMessage } =
     opts;
 
-  // NOTE: If there's no assistant message in the chat,
+  // TODO: If there's no assistant message in the chat,
   // there's nothing to process and we can proceed with
   // the conversation.
   if (!mostRecentAssistantMessage) {
@@ -30,22 +30,34 @@ export const findDecisionsToProcess = (opts: {
 
   // TODO: Get all the actions from the assistant message
   // and return them in an array.
-  const actions = TODO;
+  const actions = mostRecentAssistantMessage.parts
+    .filter((part) => part.type === 'data-action-start')
+    .map((part) => part.data.action);
 
   // TODO: Get all the decisions that the user has made
   // and return them in a map.
-  const decisions = TODO;
+  const decisions = new Map(
+    mostRecentUserMessage.parts
+      .filter((part) => part.type === 'data-action-decision')
+      .map((part) => [part.data.actionId, part.data.decision]),
+  );
 
   const decisionsToProcess: HITLDecisionsToProcess[] = [];
 
   for (const action of actions) {
     const decision = decisions.get(action.id);
 
-    // TODO: if the decision is not found, return an error -
-    // the user should make a decision before continuing.
-    //
-    // TODO: if the decision is found, add the action and
-    // decision to the decisionsToProcess array.
+    if (!decision) {
+      return {
+        message: `No decision found for action ${action.id}`,
+        status: 400,
+      };
+    }
+
+    decisionsToProcess.push({
+      action,
+      decision,
+    });
   }
 
   return decisionsToProcess;

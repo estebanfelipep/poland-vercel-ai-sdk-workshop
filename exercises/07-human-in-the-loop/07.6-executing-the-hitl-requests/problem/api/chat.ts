@@ -108,6 +108,10 @@ export const POST = async (req: Request): Promise<Response> => {
   const body: { messages: MyMessage[] } = await req.json();
   const { messages } = body;
 
+  console.log('ep:', 'initial messages', messages.length);
+
+  // console.dir(messages, { depth: null });
+
   const mostRecentUserMessage = messages[messages.length - 1];
 
   if (!mostRecentUserMessage) {
@@ -144,26 +148,72 @@ export const POST = async (req: Request): Promise<Response> => {
       // data-action-end parts.
       // This means that we'll need to make a copy of
       // the messages array, and update it.
-      const messagesAfterHitl = TODO;
+      const messagesAfterHitl: MyMessage[] = messages;
 
       for (const { action, decision } of hitlResult) {
         if (decision.type === 'approve') {
           // TODO: the user has approved the action, so
           // we should send the email!
-          //
+          sendEmail({
+            to: action.to,
+            subject: action.subject,
+            content: action.content,
+          });
+
+          console.log('ep:', 'Actual email sent');
+
           // TODO: we should also add a data-action-end
           // part to the messages array, and write it to
           // the frontend.
           //
           // NOTE: I've provided you with a MyMessagePart
           // above, which should prove useful.
+          const messagePart: MyMessage['parts'][number] = {
+            type: 'data-action-end',
+            data: {
+              actionId: action.id,
+              output: {
+                type: action.type,
+                message: 'Email sent',
+              },
+            },
+          };
+
+          // Write the result of the action to the stream
+          writer.write(messagePart);
+
+          // Add the message part to the messages array
+          messagesAfterHitl[
+            messagesAfterHitl.length - 1
+          ]!.parts.push(messagePart);
         } else {
           // TODO: the user has rejected the action, so
           // we should write a data-action-end part to
           // the messages array, and write it to the
           // frontend.
+          const messagePart: MyMessagePart = {
+            type: 'data-action-end',
+            data: {
+              actionId: action.id,
+              output: {
+                type: action.type,
+                message: 'Email not sent: ' + decision.reason,
+              },
+            },
+          };
+
+          // Write the result of the action to the stream
+          writer.write(messagePart);
+
+          // Add the message part to the messages array
+          messagesAfterHitl[
+            messagesAfterHitl.length - 1
+          ]!.parts.push(messagePart);
         }
       }
+
+      const msgsDiary = getDiary(messagesAfterHitl);
+      console.log('ep: getDiary', 'msgsDiary');
 
       const streamTextResponse = streamText({
         model: google('gemini-2.0-flash-001'),
@@ -177,8 +227,13 @@ export const POST = async (req: Request): Promise<Response> => {
         // the 'messagesAfterHitl' array.
         // If we don't do this, our LLM won't see the outputs
         // of the actions that we've performed.
-        prompt: getDiary(messages),
+        prompt: msgsDiary,
         tools: {
+          // This tool doesn't send an email directly.
+          // Instead, it requests approval from the user
+          // by sending a data-action-start part to the
+          // frontend. Sending the email is handled by the
+          // for loop above after we get the user's decision.
           sendEmail: {
             description: 'Send an email',
             inputSchema: z.object({
@@ -200,6 +255,8 @@ export const POST = async (req: Request): Promise<Response> => {
                 },
               });
 
+              console.log('ep:', 'Email approval request sent');
+
               return 'Email sent';
             },
           },
@@ -208,6 +265,17 @@ export const POST = async (req: Request): Promise<Response> => {
       });
 
       writer.merge(streamTextResponse.toUIMessageStream());
+    },
+    // Setting this prop, makes the "messages" variable
+    // in the onFinish callback include all the messages,
+    // including the ones that were added during the stream.
+    originalMessages: messages,
+    onFinish: ({ messages, responseMessage }) => {
+      // console.log('ep: responseMessage');
+      // console.dir(responseMessage, { depth: null });
+
+      console.log('ep: messages', messages.length);
+      console.dir(messages, { depth: null });
     },
   });
 
