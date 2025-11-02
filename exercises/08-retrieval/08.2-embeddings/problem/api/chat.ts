@@ -33,10 +33,18 @@ export const POST = async (req: Request): Promise<Response> => {
     execute: async ({ writer }) => {
       // TODO: call the searchTypeScriptDocs function with the
       // conversation history to get the search results
-      const searchResults = TODO;
+      const searchResults = await searchTypeScriptDocs(
+        formatMessageHistory(messages),
+      );
 
       // TODO: take the top X search results
-      const topSearchResults = TODO;
+      const topSearchResults = searchResults.slice(0, 5);
+
+      console.log(
+        topSearchResults.map(
+          (result) => `${result.filename} (${result.score})`,
+        ),
+      );
 
       const answer = streamText({
         model: google('gemini-2.0-flash-001'),

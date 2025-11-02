@@ -37,12 +37,18 @@ export const POST = async (req: Request): Promise<Response> => {
         model: google('gemini-2.0-flash-001'),
         system: `You are a helpful TypeScript developer, able to search the TypeScript docs for information.
           Your job is to generate a list of keywords which will be used to search the TypeScript docs.
+          You should also generate a search query which will be used to search the TypeScript docs. This will be used for semantic search, so can be more general.
         `,
         schema: z.object({
           keywords: z
             .array(z.string())
             .describe(
               'A list of keywords to search the TypeScript docs with. Use these for exact terminology.',
+            ),
+          searchQuery: z
+            .string()
+            .describe(
+              'A search query which will be used to search the TypeScript docs. Use this for broader terms.',
             ),
         }),
         prompt: `
@@ -56,7 +62,7 @@ export const POST = async (req: Request): Promise<Response> => {
       // TODO: Generate a search query based on the conversation history
       // This will be used for semantic search, which will be a big
       // improvement over passing the entire conversation history.
-      const searchQuery = TODO;
+      const searchQuery = keywords.object.searchQuery;
 
       const searchResults = await searchTypeScriptDocs({
         keywordsForBM25: keywords.object.keywords,
@@ -66,6 +72,8 @@ export const POST = async (req: Request): Promise<Response> => {
       const topSearchResults = searchResults.slice(0, 5);
 
       console.log(
+        'ep:',
+        'final search ranking',
         topSearchResults.map((result) => result.filename),
       );
 

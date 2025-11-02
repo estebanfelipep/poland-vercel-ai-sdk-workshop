@@ -36,12 +36,12 @@ export function reciprocalRankFusion(
 
   // Process each ranking list
   rankings.forEach((ranking) => {
-    ranking.forEach((doc, rank) => {
+    ranking.forEach((doc, index) => {
       // Get current RRF score for this document
       const currentScore = rrfScores.get(doc.filename) || 0;
 
       // Add contribution from this ranking list
-      const contribution = 1 / (RRF_K + rank);
+      const contribution = 1 / (RRF_K + index);
       rrfScores.set(doc.filename, currentScore + contribution);
 
       // Store document reference

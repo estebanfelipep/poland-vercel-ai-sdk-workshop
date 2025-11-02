@@ -15,6 +15,24 @@ export const searchTypeScriptDocs = async (opts: {
       opts.embeddingsQuery,
     );
 
+  console.log('ep:', 'bm25');
+  console.dir(
+    bm25SearchResults
+      .slice(0, 5)
+      .map((result) => result.filename),
+    { depth: null },
+  );
+
+  console.log('ep:', 'embeddings');
+  console.dir(
+    embeddingsSearchResults
+      .slice(0, 5)
+      .map((result) => result.filename),
+    {
+      depth: null,
+    },
+  );
+
   const rrfResults = reciprocalRankFusion([
     bm25SearchResults,
     embeddingsSearchResults,
