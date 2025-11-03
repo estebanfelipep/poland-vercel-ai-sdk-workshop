@@ -1,6 +1,6 @@
 ## EP notes
 
-This is a nice approach to save memories in a custom way rather than relying on Mem0. However, having a robust and old reliable system for saving and retrieving memories might be quite challenging. For example, with this approach, I asked it to remember not I like the red color, then I told it the opposite (that I didn't like that initial color), and it saved both memories, leading to conflicting information.
+This is a nice approach to save memories in a custom way rather than relying on Mem0 (for example). However, having a robust and reliable system for saving and retrieving memories might be quite challenging. For example, with a custom approach, I asked it to remember that I like the red color, then I told it the opposite (that I didn't like the red color), and it saved both memories, leading to conflicting information.
 
 A more advanced approach would involve implementing a system that can handle contradictions, perhaps by prioritizing the most recent memories or using a more sophisticated method to evaluate the relevance of each memory.
 
