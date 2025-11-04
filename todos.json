@@ -20,6 +20,20 @@
       "completed": false,
       "createdAt": "2025-11-04T14:08:02.408Z",
       "updatedAt": "2025-11-04T14:08:02.408Z"
+    },
+    "69abd7b9-559f-4e0c-8b6e-064b69653af5": {
+      "id": "69abd7b9-559f-4e0c-8b6e-064b69653af5",
+      "title": "Dummy todo",
+      "completed": false,
+      "createdAt": "2025-11-04T17:30:10.633Z",
+      "updatedAt": "2025-11-04T17:30:10.633Z"
+    },
+    "b1177b08-236e-45a4-901d-aab457bdd985": {
+      "id": "b1177b08-236e-45a4-901d-aab457bdd985",
+      "title": "Get all todos",
+      "completed": false,
+      "createdAt": "2025-11-04T22:28:42.067Z",
+      "updatedAt": "2025-11-04T22:28:42.067Z"
     }
   }
 }

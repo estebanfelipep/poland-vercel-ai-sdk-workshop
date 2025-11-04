@@ -45,6 +45,8 @@ export const todosAgent = async (opts: { prompt: string }) => {
     (todo) => !todo.completed,
   );
 
+  console.log('ep:', 'Todos agent');
+
   const streamResult = streamText({
     model: google('gemini-2.0-flash'),
     system: `
@@ -55,6 +57,7 @@ export const todosAgent = async (opts: { prompt: string }) => {
       - createTodos: Create one or more todos
       - updateTodo: Update an existing todo
       - deleteTodo: Delete an existing todo
+      - getTodos: Get all todos
 
       You will be given a prompt, and you will need to use the tools to manage the todos.
 
@@ -68,6 +71,26 @@ export const todosAgent = async (opts: { prompt: string }) => {
     `,
     prompt: opts.prompt,
     tools: {
+      getTodos: tool({
+        description: 'Gets all todos with their status',
+        inputSchema: z.object({}).optional(),
+        execute: async () => {
+          console.log('ep:', 'Get all todos');
+
+          const db = await todosDb.loadDatabase();
+          const todos = Object.values(db.todos);
+
+          if (todos.length === 0) {
+            return 'No todos found';
+          }
+
+          // return todos;
+
+          return ['Current todos:', formatTodos(todos)].join(
+            '\n\n',
+          );
+        },
+      }),
       createTodos: tool({
         description: 'Create a new todo',
         inputSchema: z.object({
@@ -163,6 +186,9 @@ export const todosAgent = async (opts: { prompt: string }) => {
   await streamResult.consumeStream();
 
   const finalMessages = (await streamResult.response).messages;
+
+  console.log('ep: todo agent messages');
+  console.dir(await streamResult.response, { depth: null });
 
   return formatModelMessages(finalMessages);
 };
