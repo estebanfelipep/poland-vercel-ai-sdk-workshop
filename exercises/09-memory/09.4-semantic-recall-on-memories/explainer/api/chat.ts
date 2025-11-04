@@ -50,6 +50,20 @@ const formatMemory = (memory: DB.MemoryItem) => {
   ].join('\n');
 };
 
+let tokensTotalCount = 0;
+
+const countTokens = (
+  tokensToAdd: number,
+  tokensName: string,
+) => {
+  tokensTotalCount += tokensToAdd;
+
+  console.log('ep:', {
+    [tokensName]: tokensToAdd,
+    tokensTotalCount,
+  });
+};
+
 export const POST = async (req: Request): Promise<Response> => {
   const body: { messages: MyMessage[] } = await req.json();
   const { messages } = body;
@@ -78,12 +92,20 @@ export const POST = async (req: Request): Promise<Response> => {
     `,
   });
 
+  countTokens(
+    queryRewriterResult.usage.totalTokens || 0,
+    'queryRewriter LLM',
+  );
+
+  console.log('ep:', 'queryRewriterResult');
   console.dir(queryRewriterResult.object, { depth: null });
 
   const allMemories = await searchMemories({
     searchQuery: queryRewriterResult.object.searchQuery,
     keywordsForBM25: queryRewriterResult.object.keywords,
   });
+
+  console.log('ep:allMemories', allMemories);
 
   const formattedMemories = allMemories
     .slice(0, 10)
@@ -106,6 +128,11 @@ export const POST = async (req: Request): Promise<Response> => {
         `,
         messages: convertToModelMessages(messages),
       });
+
+      countTokens(
+        (await result.usage).totalTokens || 0,
+        'Base LLM',
+      );
 
       writer.merge(result.toUIMessageStream());
     },
@@ -182,6 +209,11 @@ export const POST = async (req: Request): Promise<Response> => {
         ${formattedMemories}
         `,
       });
+
+      countTokens(
+        memoriesResult.usage.totalTokens || 0,
+        'memoriesResult LLM',
+      );
 
       const { updates, deletions, additions } =
         memoriesResult.object;

@@ -201,7 +201,27 @@ export const POST = async (req: Request): Promise<Response> => {
               // returns the latest text delta, so you'll need to
               // keep track of the full summary yourself so
               // you can pass it in to the writer.write call.
-              const summary = TODO;
+              let summary = '';
+
+              console.log('ep:', { result });
+
+              await summarizeAgentOutput({
+                initialPrompt: formattedMessages,
+                agentOutput: result,
+                onSummaryDelta: (delta) => {
+                  summary += delta;
+                  writer.write({
+                    type: 'data-task',
+                    id: task.id,
+                    data: {
+                      id: task.id,
+                      subagent: task.subagent,
+                      task: task.task,
+                      output: delta,
+                    },
+                  });
+                },
+              });
 
               diary = [
                 diary,
@@ -213,7 +233,7 @@ export const POST = async (req: Request): Promise<Response> => {
                 `The subagent provided the following output:`,
                 `<output>`,
                 // TODO: The summary should be passed in here.
-                TODO,
+                summary,
                 `</output>`,
               ].join('\n');
             } catch (error) {
@@ -247,16 +267,23 @@ export const POST = async (req: Request): Promise<Response> => {
         step++;
       }
 
+      console.log('ep:', { diary });
+
       const result = streamText({
         model: google('gemini-2.0-flash'),
         system: `
           The current date and time is ${new Date().toISOString()}.
 
-          You are a helpful assistant that summarizes the results of a multi-agent system.
+          You are a helpful assistant that gives answers based on the results of a multi-agent system.
 
           You will be given a diary of the work performed so far and the user's initial prompt.
 
-          You should provide a summary of the tasks performed and provide the results to the user.
+          Be clear and concise, make sure to answer the user request.
+
+          Use markdown formatting to make the response more readable:
+            - Prefer bullet points for lists
+            - Use bold and italics for emphasis
+            - Use headings to structure the response
         `,
         prompt: `
           Initial prompt:

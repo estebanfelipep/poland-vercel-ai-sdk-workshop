@@ -1,0 +1,22 @@
+{
+  "events": {
+    "ed6aa5ea-a50a-4309-967b-47d233df531b": {
+      "id": "ed6aa5ea-a50a-4309-967b-47d233df531b",
+      "title": "Test Event",
+      "description": "This is a test event.",
+      "start": "2025-11-05T09:00:00Z",
+      "end": "2025-11-05T10:00:00Z",
+      "createdAt": "2025-11-04T14:06:58.159Z",
+      "updatedAt": "2025-11-04T14:06:58.159Z"
+    },
+    "775daf47-0ce1-44f8-bc15-60403d777e1a": {
+      "id": "775daf47-0ce1-44f8-bc15-60403d777e1a",
+      "title": "Test Event",
+      "description": "This is a test event",
+      "start": "2025-11-05T08:00:00Z",
+      "end": "2025-11-05T09:00:00Z",
+      "createdAt": "2025-11-04T14:07:55.414Z",
+      "updatedAt": "2025-11-04T14:07:55.414Z"
+    }
+  }
+}

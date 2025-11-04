@@ -1,13 +1,22 @@
 import { google } from '@ai-sdk/google';
-import { generateText, streamText, type UIMessage } from 'ai';
+import {
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  streamText,
+  type StreamTextResult,
+  type ToolSet,
+  type UIMessage,
+  type UIMessageStreamWriter,
+} from 'ai';
+
+type MyDataParts = {
+  'slack-message': string;
+  'slack-message-feedback': string;
+  love: string;
+};
 
 // TODO: replace all instances of UIMessage with MyMessage
-export type MyMessage = UIMessage<
-  unknown,
-  {
-    // TODO: declare custom data parts here
-  }
->;
+export type MyMessage = UIMessage<unknown, MyDataParts>;
 
 const formatMessageHistory = (messages: UIMessage[]) => {
   return messages
@@ -31,19 +40,48 @@ const EVALUATE_SLACK_MESSAGE_SYSTEM = `You are evaluating the Slack message prod
   Evaluation criteria:
   - The Slack message should be written in a way that is easy to understand.
   - It should be appropriate for a professional Slack conversation.
+  - Do not give any suggestions.
 `;
 const WRITE_SLACK_MESSAGE_FINAL_SYSTEM = `You are writing a Slack message based on the conversation history, a first draft, and some feedback given about that draft.
 
-  Return only the final Slack message, no other text.
+  Return only the final Slack message, no other text. In gangster style. Be short.
 `;
+
+const streamCustomDataPart = async ({
+  writer,
+  streamResult,
+  dataPartType,
+}: {
+  writer: UIMessageStreamWriter<MyMessage>;
+  streamResult: StreamTextResult<ToolSet, never>;
+  dataPartType: keyof MyDataParts;
+}) => {
+  const partId = crypto.randomUUID();
+
+  let content = '';
+
+  for await (const part of streamResult.textStream) {
+    content += part;
+
+    writer.write({
+      type: `data-${dataPartType}`,
+      data: content,
+      id: partId,
+    });
+  }
+
+  const finalContent = content;
+
+  return { finalContent };
+};
 
 export const POST = async (req: Request): Promise<Response> => {
   // TODO: change to MyMessage[]
-  const body: { messages: UIMessage[] } = await req.json();
+  const body: { messages: MyMessage[] } = await req.json();
   const { messages } = body;
 
   // TODO - change to streamText and write to the stream as custom data parts
-  const writeSlackResult = await generateText({
+  const writeSlackResult = await streamText({
     model: google('gemini-2.0-flash-001'),
     system: WRITE_SLACK_MESSAGE_FIRST_DRAFT_SYSTEM,
     prompt: `
@@ -52,8 +90,8 @@ export const POST = async (req: Request): Promise<Response> => {
     `,
   });
 
-  // TODO - change to streamText and write to the stream as custom data parts
-  const evaluateSlackResult = await generateText({
+  // // TODO: - change to streamText and write to the stream as custom data parts
+  const evaluateSlackResult = await streamText({
     model: google('gemini-2.0-flash-001'),
     system: EVALUATE_SLACK_MESSAGE_SYSTEM,
     prompt: `
@@ -61,24 +99,77 @@ export const POST = async (req: Request): Promise<Response> => {
       ${formatMessageHistory(messages)}
 
       Slack message:
-      ${writeSlackResult.text}
+      ${await writeSlackResult.text}
     `,
   });
 
-  const finalSlackAttempt = streamText({
-    model: google('gemini-2.0-flash-001'),
-    system: WRITE_SLACK_MESSAGE_FINAL_SYSTEM,
-    prompt: `
-      Conversation history:
-      ${formatMessageHistory(messages)}
+  const stream = createUIMessageStream({
+    generateId: () => 'love',
+    execute: async ({ writer }) => {
+      writer.write({
+        type: 'data-slack-message',
+        data: 'Starting Slack message generation...',
+        id: crypto.randomUUID(),
+      });
 
-      First draft:
-      ${writeSlackResult.text}
+      const streamWriteSlack = await streamCustomDataPart({
+        writer,
+        streamResult: writeSlackResult,
+        dataPartType: 'slack-message',
+      });
 
-      Previous feedback:
-      ${evaluateSlackResult.text}
-    `,
+      const streamEvaluateSlack = await streamCustomDataPart({
+        writer,
+        streamResult: evaluateSlackResult,
+        dataPartType: 'slack-message-feedback',
+      });
+
+      const finalSlackAttempt = streamText({
+        model: google('gemini-2.0-flash-lite'),
+        system: WRITE_SLACK_MESSAGE_FINAL_SYSTEM,
+        prompt: `
+            say hello
+
+            Conversation history:
+            ${formatMessageHistory(messages)}
+
+            First draft:
+            ${streamWriteSlack.finalContent}
+
+            Previous feedback:
+            ${streamEvaluateSlack.finalContent}
+            `,
+      });
+
+      const textPartId = crypto.randomUUID();
+
+      writer.write({
+        type: 'text-start',
+        id: textPartId,
+      });
+
+      for await (const part of finalSlackAttempt.textStream) {
+        writer.write({
+          type: 'text-delta',
+          delta: part,
+          id: textPartId,
+        });
+      }
+
+      writer.write({
+        type: 'text-end',
+        id: textPartId,
+      });
+
+      // THIS DIDN'T WORK FOR SOME REASON.
+      // writer.merge(finalSlackAttempt.toUIMessageStream());
+
+      // I even tried to replicate the official example but no luck.
+      // Official example: https://ai-sdk.dev/docs/ai-sdk-ui/streaming-data#streaming-data-from-the-server
+
+      return;
+    },
   });
 
-  return finalSlackAttempt.toUIMessageStreamResponse();
+  return createUIMessageStreamResponse({ stream });
 };

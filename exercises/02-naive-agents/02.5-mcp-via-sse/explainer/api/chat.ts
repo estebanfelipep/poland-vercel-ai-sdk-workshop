@@ -12,6 +12,8 @@ if (!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) {
   throw new Error('GITHUB_PERSONAL_ACCESS_TOKEN is not set');
 }
 
+// This exercise does not work.
+
 export const POST = async (req: Request): Promise<Response> => {
   const body: { messages: UIMessage[] } = await req.json();
   const { messages } = body;

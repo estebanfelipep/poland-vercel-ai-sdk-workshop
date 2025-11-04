@@ -13,12 +13,31 @@ if (!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) {
 }
 
 export const POST = async (req: Request): Promise<Response> => {
+  const myTransport = new StdioMCPTransport({
+    command: 'docker',
+    args: [
+      'run',
+      '-i',
+      '--rm',
+      '-e',
+      'GITHUB_PERSONAL_ACCESS_TOKEN',
+      'ghcr.io/github/github-mcp-server',
+    ],
+    env: {
+      GITHUB_PERSONAL_ACCESS_TOKEN:
+        process.env.GITHUB_PERSONAL_ACCESS_TOKEN!,
+    },
+  });
   const body: { messages: UIMessage[] } = await req.json();
   const { messages } = body;
 
   // TODO - create an MCP client that uses the StdioMCPTransport
   // to connect to the GitHub MCP server
-  const mcpClient = TODO;
+  const mcpClient = await createMCPClient({
+    transport: myTransport,
+  });
+
+  const tools = await mcpClient.tools({ schemas: 'automatic' });
 
   const result = streamText({
     model: google('gemini-2.5-flash'),
@@ -27,7 +46,7 @@ export const POST = async (req: Request): Promise<Response> => {
       You are a helpful assistant that can use the GitHub API to interact with the user's GitHub account.
     `,
     // TODO - use the mcpClient.tools() method to get the tools
-    tools: TODO,
+    tools,
     stopWhen: [stepCountIs(10)],
   });
 
@@ -35,6 +54,10 @@ export const POST = async (req: Request): Promise<Response> => {
     // TODO - use the mcpClient.close() method to close the MCP client
     // when the stream is finished. This will also close the process
     // running the GitHub MCP server.
-    onFinish: TODO,
+    onFinish: async () => {
+      console.log('ep:', '-------Stream finished');
+
+      await mcpClient.close();
+    },
   });
 };

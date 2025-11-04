@@ -56,7 +56,22 @@ const formatMessageHistory = (messages: MyMessage[]) => {
             //
             // The information about the "id" will be lost, and
             // will need to be re-fetched from the subagent.
-            TODO;
+            if (part.type === 'data-task') {
+              return [
+                `The ${part.data.subagent} subagent was asked to perform the following task:`,
+                `<task>`,
+                part.data.task,
+                `</task>`,
+                ...(part.data.output
+                  ? [
+                      `The subagent provided the following output:`,
+                      `<output>`,
+                      part.data.output,
+                      `</output>`,
+                    ]
+                  : []),
+              ].join('\n');
+            }
 
             return '';
           })
@@ -81,11 +96,16 @@ export const POST = async (req: Request): Promise<Response> => {
       // work performed so far.
       // In the solution, I've used a simple string to track
       // the work performed so far, which is simple appended to.
-      let diary = TODO;
+      let diary = '';
 
       // NOTE: We'll run this loop until we've taken 10 steps.
       // This prevents the loop from running forever.
+
+      /**
+       * This while doesn't seem to be needed at all
+       */
       while (step < 10) {
+        console.log('ep: In loop', { step, diary });
         const tasksResult = streamObject({
           model: google('gemini-2.0-flash'),
           system: `
@@ -123,6 +143,10 @@ export const POST = async (req: Request): Promise<Response> => {
             Initial prompt:
             
             ${formattedMessages}
+
+            The diary of the work performed so far:
+            
+            ${diary ?? 'No work has been performed yet.'}
           `,
           schema: z.object({
             tasks: z.array(
@@ -172,6 +196,7 @@ export const POST = async (req: Request): Promise<Response> => {
 
         const tasks = (await tasksResult.object).tasks;
 
+        console.log('ep:', { tasks, step });
         // NOTE: If there are no tasks, we'll break out of the loop.
         if (tasks.length === 0) {
           break;
@@ -199,27 +224,71 @@ export const POST = async (req: Request): Promise<Response> => {
             try {
               // TODO: Call the subagent with the task.task as the prompt.
               // The result should be the output of the subagent.
-              const result = TODO;
+              const result = await subagent({
+                prompt: task.task,
+              });
 
               // TODO: Write the updated task to the client,
               // using writer.write, remembering to pass in the id.
-              writer.write(TODO);
+              writer.write({
+                type: 'data-task',
+                id: task.id,
+                data: {
+                  id: task.id,
+                  subagent: task.subagent,
+                  task: task.task,
+                  output: result,
+                },
+              });
 
               // TODO: Update the diary with the new result.
-              diary = TODO;
+              diary = [
+                diary,
+                '',
+                `The ${task.subagent} subagent was asked to perform the following task:`,
+                `<task>`,
+                task.task,
+                `</task>`,
+                `The subagent provided the following output:`,
+                `<output>`,
+                result,
+                `</output>`,
+              ].join('\n');
             } catch (error) {
               // TODO: If the task fails, write the error to the client,
               // using writer.write, remembering to pass in the id.
-              writer.write(TODO);
+              writer.write({
+                type: 'data-task',
+                id: task.id,
+                data: {
+                  id: task.id,
+                  subagent: task.subagent,
+                  task: task.task,
+                  output: `Error: ${error}`,
+                },
+              });
 
               // TODO: Update the diary with the new error.
-              diary = TODO;
+              diary = [
+                diary,
+                '',
+                `The ${task.subagent} subagent was asked to perform the following task:`,
+                `<task>`,
+                task.task,
+                `</task>`,
+                `The subagent failed to perform the task:`,
+                `<output>`,
+                `Error: ${error}`,
+                `</output>`,
+              ].join('\n');
             }
           }),
         );
 
         step++;
       }
+
+      console.log('ep:', { step, diary });
     },
     onError(error) {
       console.error(error);

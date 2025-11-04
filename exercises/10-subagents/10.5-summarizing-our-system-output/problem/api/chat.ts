@@ -262,12 +262,50 @@ export const POST = async (req: Request): Promise<Response> => {
       // multi-agent system. Use the getSummarizeSystemPrompt
       // function to get the system prompt. Use the formattedMessages
       // and diary to get the prompt.
-      const summarizeResult = TODO;
+      const summarizeResult = streamText({
+        model: google('gemini-2.0-flash'),
+        system: getSummarizeSystemPrompt(),
+        prompt: `
+          Initial prompt:
+          
+          ${formattedMessages}
+          
+          The diary of the work performed so far:
+          
+          ${diary}
+        `,
+      });
 
       // TODO: Write the summary to the client, either by manually
       // writing the text parts or by using .toUIMessageStream()
       // and calling writer.merge() to merge the text parts.
-      TODO;
+
+      const textPartId = crypto.randomUUID();
+
+      writer.write({
+        type: 'text-start',
+        id: textPartId,
+      });
+
+      for await (const chunk of summarizeResult.textStream) {
+        writer.write({
+          type: 'text-delta',
+          id: textPartId,
+          delta: chunk,
+        });
+      }
+
+      writer.write({
+        type: 'text-end',
+        id: textPartId,
+      });
+
+      await summarizeResult.consumeStream();
+
+      /**
+       * This doesn't work
+       */
+      // writer.merge(summarizeResult.toUIMessageStream());
     },
     onError(error) {
       console.error(error);

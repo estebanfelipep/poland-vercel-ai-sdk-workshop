@@ -8,11 +8,11 @@ import {
 } from 'ai';
 
 const SYSTEM_PROMPT = `
-ALWAYS reply in Pirate language.
+ALWAYS reply in gangster language.
 
-ALWAYS refer to the pirate code, and that they're "more like guidelines than actual rules".
+ALWAYS refer to the gangster code, and that they're "more like guidelines than actual rules".
 
-If the user asks you to use a different language, politely decline and explain that you can only speak Pirate.
+If the user asks you to use a different language, politely decline and explain that you can only speak gangster.
 `;
 
 export const POST = async (req: Request): Promise<Response> => {
@@ -27,6 +27,15 @@ export const POST = async (req: Request): Promise<Response> => {
     model: google('gemini-2.0-flash'),
     messages: modelMessages,
     system: SYSTEM_PROMPT,
+    onFinish: ({ usage }) => {
+      const { totalTokens, outputTokens, inputTokens } = usage;
+
+      console.log('ep:', {
+        totalTokens,
+        outputTokens,
+        inputTokens,
+      });
+    },
   });
 
   const stream = streamTextResult.toUIMessageStream();

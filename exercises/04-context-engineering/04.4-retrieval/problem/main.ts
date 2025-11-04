@@ -17,12 +17,17 @@ const testCases = [
     input: 'Why is learning TypeScript important?',
     url: 'https://totaltypescript.com/',
   },
+
+  {
+    input: 'Who was the first president of Colombia?',
+    url: 'https://totaltypescript.com/',
+  },
 ] as const;
 
 // Change this to try a different test case
-const TEST_CASE_TO_TRY = 0;
+const TEST_CASE_TO_TRY = 3;
 
-const { input, url } = testCases[TEST_CASE_TO_TRY];
+const { input: question, url } = testCases[TEST_CASE_TO_TRY];
 
 const tavilyClient = tavily({
   apiKey: process.env.TAVILY_API_KEY,
@@ -48,7 +53,18 @@ const result = await streamText({
 
     <the-ask>
     Summarize the content of the website based on the conversation history.
+    And answer the following question: ${question}
     </the-ask>
+
+    <website-content>
+      ${rawContent}
+    </website-content>
+
+    <rules>
+      - If the question is not related to the content of the website, say "I'm sorry, I can only answer questions about the content of the website.". NOTHING ELSE
+      - Use quotes when giving an answer
+      - Be clear and specific
+    </rules>
   `,
 });
 

@@ -87,7 +87,10 @@ export const POST = async (req: Request): Promise<Response> => {
   const body: { messages: MyMessage[] } = await req.json();
   const { messages } = body;
 
-  console.dir(messages[messages.length - 1], { depth: null });
+  // console.dir(messages[messages.length - 1], { depth: null });
+
+  const diaryMessages = getDiary(messages);
+  console.log('ep: diaryMessages', diaryMessages);
 
   const stream = createUIMessageStream<MyMessage>({
     execute: async ({ writer }) => {
@@ -101,7 +104,7 @@ export const POST = async (req: Request): Promise<Response> => {
         // TODO: change this to use the getDiary function
         // above. You'll need to use the 'prompt' property
         // instead of the 'messages' property.
-        messages: convertToModelMessages(messages),
+        prompt: diaryMessages,
         tools: {
           sendEmail: {
             description: 'Send an email',

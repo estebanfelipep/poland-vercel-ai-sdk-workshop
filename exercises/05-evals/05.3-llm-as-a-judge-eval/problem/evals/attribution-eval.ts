@@ -34,8 +34,39 @@ export const attributionToChainOfThoughtPaper = createScorer<
     const result = await generateObject({
       model: google('gemini-2.0-flash'),
       system: ATTRIBUTION_PROMPT,
-      messages: TODO, // TODO: Pass the chain of thought paper, the question and the answer given
-      schema: TODO, // TODO: Define the schema for the response
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `
+                The answer you are evaluating is:
+                  <question>${input}</question>
+
+                The original question posed was:
+                  <answer>${output}</answer>
+            `,
+            },
+            {
+              type: 'file',
+              data: chainOfThoughtPaper,
+              mediaType: 'application/pdf',
+            },
+          ],
+        },
+      ], // TODO: Pass the chain of thought paper, the question and the answer given
+      schema: z.object({
+        score: z
+          .enum(['A', 'B', 'C', 'D'])
+          .describe('Attribution score'),
+        feedback: z
+          .string()
+          .max(500)
+          .describe(
+            'Short and concise explanation of the score given',
+          ),
+      }), // TODO: Define the schema for the response
     });
 
     // NOTE: it's important to use a string-based score for the
@@ -47,9 +78,11 @@ export const attributionToChainOfThoughtPaper = createScorer<
     const scoreMap = {
       A: 1,
       B: 0.5,
-      C: 0,
+      C: 0.2,
       D: 0,
     };
+
+    console.log('ep: feedback', result.object.feedback);
 
     return {
       score: scoreMap[result.object.score],

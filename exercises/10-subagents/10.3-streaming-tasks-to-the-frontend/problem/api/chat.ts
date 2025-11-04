@@ -24,7 +24,13 @@ export type MyMessage = UIMessage<
     // - subagent: the name of the subagent that will perform the task
     // - task: the task to perform
     // - output: the output of the task
-    task: TODO;
+    task: {
+      id: string;
+      subagent: string;
+      task: string;
+      // The diary entry
+      output: string;
+    };
   }
 >;
 
@@ -63,7 +69,7 @@ export const POST = async (req: Request): Promise<Response> => {
       const formattedMessages = formatMessageHistory(messages);
 
       // TODO: Swap this over to streamObject instead of generateObject.
-      const tasksResult = await generateObject({
+      const tasksResult = await streamObject({
         model: google('gemini-2.0-flash'),
         system: `
           You are a helpful assistant that manages a multi-agent system.
@@ -137,12 +143,22 @@ export const POST = async (req: Request): Promise<Response> => {
           // If we don't pass in an id, a new data part will
           // be created for each task update - potentially
           // spewing out a LOT of half-formed crud in the UI.
-          writer.write(TODO);
+          writer.write({
+            type: 'data-task',
+            // id: index.toString(),
+            id,
+            data: {
+              id,
+              subagent: task?.subagent ?? '',
+              task: task?.task ?? '',
+              output: '',
+            },
+          });
         });
       }
 
       // TODO: Remember to await the tasksResult.object
-      const tasks = tasksResult.object.tasks;
+      const tasks = (await tasksResult.object).tasks;
 
       console.dir(tasks);
     },

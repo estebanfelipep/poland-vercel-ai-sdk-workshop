@@ -41,7 +41,7 @@ const links = [
   },
 ];
 
-evalite('Capitals', {
+evalite('TypeScript Releases', {
   data: () => [
     {
       input: 'Tell me about the TypeScript 5.8 release',
@@ -52,13 +52,33 @@ evalite('Capitals', {
   ],
   task: async (input) => {
     const capitalResult = await generateText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-2.0-flash-lite'),
       prompt: `
         You are a helpful assistant that can answer questions about TypeScript releases.
+
+        <links>
+        ${links.map((link) => `<link>${link.title}: ${link.url}</link>`).join('\n')}
+        </links>
+
+        <rules>
+          - You must be short and concise in your answers, they must be less than 500 characters. Try to use bullet points.
+          - You must include markdown links relevant to your answer.
+        </rules>
+
+        Format markdown links inline:
+          <markdown-link-example>
+          I really like [this website about cakes](https://www.cakes.com).
+          </markdown-link-example>
+          <markdown-link-example>
+          For more information, check out [this piece of reference material](https://www.cakes.com).
+          </markdown-link-example>
 
         <question>
         ${input}
         </question>
+
+        Answer the question, with relevant links.
+        Reply only with the answer.
       `,
     });
 
@@ -68,13 +88,25 @@ evalite('Capitals', {
     {
       name: 'Includes Markdown Links',
       scorer: ({ input, output, expected }) => {
-        // TODO: check if the output includes markdown links
+        const markdownLinksFound =
+          output.match(/\[.*?\]\((.*?)\)/g) ?? [];
+
+        return markdownLinksFound.length > 0 ? 1 : 0;
+      },
+    },
+    {
+      name: 'Includes bullet points',
+      scorer: ({ input, output, expected }) => {
+        const bulletPointsFound =
+          output.match(/^\s*[\*\-]\s+/gm) ?? [];
+
+        return bulletPointsFound.length > 0 ? 1 : 0;
       },
     },
     {
       name: 'Output length',
       scorer: ({ input, output, expected }) => {
-        // TODO: check if the output is less than 500 characters
+        return output.length < 500 ? 1 : 0; // TODO: check if the output is less than 500 characters
       },
     },
   ],

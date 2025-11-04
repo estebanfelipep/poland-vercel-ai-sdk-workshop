@@ -20,6 +20,7 @@ By the end of this workshop, you'll be able to:
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/en/download) (version 22 or higher)
+  - Version 24 recommended, based on personal experience
 - [pnpm](https://pnpm.io/) (optional, you can use `npm`, `yarn` or `bun` instead)
 - A free (or paid) [Gemini API Key](https://aistudio.google.com/apikey), or an API key from your AI provider of choice
 - A free [Tavily](https://tavily.com/) API key (optional, for a couple of exercises)

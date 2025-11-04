@@ -1,3 +1,13 @@
+## EP notes
+
+This is a nice approach to save memories in a custom way rather than relying on Mem0 (for example). However, having a robust and reliable system for saving and retrieving memories might be quite challenging. For example, with a custom approach, I asked it to remember that I like the red color, then I told it the opposite (that I didn't like the red color), and it saved both memories, leading to conflicting information.
+
+A more advanced approach would involve implementing a system that can handle contradictions, perhaps by prioritizing the most recent memories or using a more sophisticated method to evaluate the relevance of each memory.
+
+That's all a combination between prompt engineering and memory management strategy, which can be quite complex.
+
+--
+
 While using Mem0 is a great way to get started with memory, it's often better to own the logic for your memory system yourself.
 
 In this exercise, we're going to begin that journey.

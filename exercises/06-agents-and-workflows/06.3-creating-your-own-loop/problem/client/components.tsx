@@ -18,47 +18,59 @@ export const Message = ({
 }: {
   role: string;
   parts: MyMessage['parts'];
-}) => (
-  <div className="my-4">
-    {parts.map((part) => {
-      if (part.type === 'data-slack-message') {
-        return (
-          <div key={part.id} className="mb-4">
-            <h2 className="text-gray-300 text-sm mb-1">
-              First draft
-            </h2>
-            <p className="text-gray-400 text-xs">{part.data}</p>
-          </div>
-        );
-      }
+}) => {
+  return (
+    <div className="my-4">
+      {parts.map((part) => {
+        if (part.type === 'data-slack-message') {
+          return (
+            <div key={part.id} className="mb-4">
+              <h2 className="text-gray-300 text-sm mb-1">
+                Slack message info
+              </h2>
+              <p className="text-gray-400 text-xs">
+                {part.data}
+              </p>
+            </div>
+          );
+        }
 
-      if (part.type === 'data-slack-message-feedback') {
-        return (
-          <div key={part.id} className="mb-4">
-            <h2 className="text-gray-300 text-sm mb-1">
-              Feedback
-            </h2>
-            <p className="text-gray-400 text-xs">{part.data}</p>
-          </div>
-        );
-      }
+        if (part.type === 'data-slack-message-feedback') {
+          return (
+            <div key={part.id} className="mb-4">
+              <h2 className="text-gray-300 text-sm mb-1">
+                Slack message feedback info
+              </h2>
+              <p className="text-gray-400 text-xs">
+                {part.data}
+              </p>
+            </div>
+          );
+        }
 
-      return null;
-    })}
+        if (part.type === 'text') {
+          return (
+            <ReactMarkdown key={part.text}>
+              {(role === 'user' ? 'User: ' : 'AI: ') +
+                parts
+                  .map((part) => {
+                    if (part.type === 'text') {
+                      console.log('ep:', part.text);
 
-    <ReactMarkdown>
-      {(role === 'user' ? 'User: ' : 'AI: ') +
-        parts
-          .map((part) => {
-            if (part.type === 'text') {
-              return part.text;
-            }
-            return '';
-          })
-          .join('')}
-    </ReactMarkdown>
-  </div>
-);
+                      return part.text;
+                    }
+                    return '';
+                  })
+                  .join('')}
+            </ReactMarkdown>
+          );
+        }
+
+        return null;
+      })}
+    </div>
+  );
+};
 
 export const ChatInput = ({
   input,

@@ -4,7 +4,6 @@ import {
   stepCountIs,
   streamText,
   tool,
-  type InferUITool,
   type InferUITools,
   type UIMessage,
 } from 'ai';

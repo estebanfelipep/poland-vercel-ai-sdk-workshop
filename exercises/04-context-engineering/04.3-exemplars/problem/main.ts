@@ -28,8 +28,19 @@ const result = await streamText({
     Titles should be formatted in sentence case, with capital letters at the start of each word. Do not provide a period at the end.
     </rules>
 
-    ${TODO /* TODO: Add the exemplars here, formatted with XML */}
-    
+    <examples>
+    ${exemplars
+      .map(({ input, expected }) => {
+        return `
+      <example>
+        <input>${input}</input>
+        <expected>${expected}</expected>
+      </example>
+      `;
+      })
+      .join('\n')}
+    </examples>
+
     <conversation-history>
     ${INPUT}
     </conversation-history>

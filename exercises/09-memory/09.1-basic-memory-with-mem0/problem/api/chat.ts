@@ -49,7 +49,12 @@ export const POST = async (req: Request): Promise<Response> => {
     execute: async ({ writer }) => {
       // TODO: search for memories using mem0,
       // making sure to pass in the user id
-      const memoryResult = TODO;
+      const memoryResult = await memory.search(
+        formatMessageHistory(messages),
+        {
+          userId: USER_ID,
+        },
+      );
 
       console.log('Search Result');
       console.dir(memoryResult, { depth: null });
@@ -62,21 +67,45 @@ export const POST = async (req: Request): Promise<Response> => {
         model: google('gemini-2.0-flash-lite'),
         system: `You are a helpful assistant that can answer questions and help with tasks.
 
+        The date is ${new Date().toISOString().split('T')[0]}.
+
         You have access to the following memories:
+
+        <memories>
+        ${memoryResult.results.map(formatMemory).join('\n\n')}
+        </memories>
         `,
         messages: convertToModelMessages(messages),
       });
 
       writer.merge(result.toUIMessageStream());
     },
+    originalMessages: messages,
     onFinish: async (response) => {
       // TODO: add memories to mem0, making
       // sure to pass in the user id.
       // Pass the entire message history to mem0
-      const result = TODO;
+      const { messages } = response;
+
+      const allMessages = messages;
+
+      console.log('ep: allMessages l', allMessages.length);
+
+      const result = await memory.add(
+        allMessages.map((message) => ({
+          role: message.role,
+          content: partsToText(message.parts),
+        })),
+        { userId: USER_ID },
+      );
 
       console.log('Add Result');
       console.dir(result, { depth: null });
+
+      console.log('ep:', 'memories');
+      console.dir(await memory.getAll({ userId: USER_ID }), {
+        depth: null,
+      });
     },
   });
 

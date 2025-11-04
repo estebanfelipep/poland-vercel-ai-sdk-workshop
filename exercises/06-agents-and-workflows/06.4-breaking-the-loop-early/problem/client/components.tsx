@@ -51,6 +51,7 @@ export const Message = ({
         parts
           .map((part) => {
             if (part.type === 'text') {
+              console.log('ep:', part.text);
               return part.text;
             }
             return '';

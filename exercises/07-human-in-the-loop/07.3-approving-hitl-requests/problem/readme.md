@@ -1,3 +1,18 @@
+## EP Notes:
+
+Be aware that even though we are setting custom data parts in the messages, the llm will only get whatever is returned by `convertToModelMessages`, and that does not include data parts.
+
+Also, when an llm request for approval, it doesn't mean that the initial request is on hold. Usually, it will happen a bit like this:
+
+- First message: The user makes the request to send an email
+- Second message: The agent gets the request and ask for approval
+- Third message: The user approves or rejects
+- Fourth message: The agent sends the email
+
+All of that requires four messages total, two from the user and two from the assistant.
+
+--
+
 In this exercise, we're going to focus on the approval flow for our human-in-the-loop setup. We'll spend most of our time in the front end, with the exception of the first TODO.
 
 ## The `action-decision` Part

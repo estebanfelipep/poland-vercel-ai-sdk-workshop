@@ -4,7 +4,8 @@ import { tavily } from '@tavily/core';
 
 const testCases = [
   {
-    input: 'What did Guillermo Rauch say about Matt Pocock?',
+    // input: 'What did Guillermo Rauch say about Matt Pocock?',
+    input: 'Who was the first president of Colombia?',
     url: 'https://www.aihero.dev/',
   },
 

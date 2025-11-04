@@ -27,6 +27,41 @@ export const Message = ({
 
       // TODO: if the part is a data-action-start,
       // render a preview of the email that will be sent
+      if (part.type === 'data-action-start') {
+        return (
+          <div key={part.id} className="mb-4">
+            <h2 className="text-gray-300 text-sm mb-1">
+              I'm requesting to send an email:
+            </h2>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 mb-3">
+              <div className="mb-2">
+                <span className="text-gray-400 text-xs">
+                  To:
+                </span>
+                <span className="text-white text-sm ml-2">
+                  {part.data.action.to}
+                </span>
+              </div>
+              <div className="mb-2">
+                <span className="text-gray-400 text-xs">
+                  Subject:
+                </span>
+                <span className="text-white text-sm ml-2">
+                  {part.data.action.subject}
+                </span>
+              </div>
+              <div className="mb-2">
+                <span className="text-gray-400 text-xs">
+                  Content:
+                </span>
+                <div className="text-white text-sm mt-1 p-2 bg-gray-800 border-l-2 border-blue-500">
+                  {part.data.action.content}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       return null;
     })}

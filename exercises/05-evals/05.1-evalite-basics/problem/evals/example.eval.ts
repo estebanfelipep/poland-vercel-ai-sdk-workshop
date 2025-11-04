@@ -1,3 +1,5 @@
+import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
 import { evalite } from 'evalite';
 
 evalite('Capitals', {
@@ -16,9 +18,22 @@ evalite('Capitals', {
     },
   ],
   task: async (input) => {
-    const capitalResult = TODO; // Implement this!
+    const aiResult = await generateText({
+      model: google('gemini-2.0-flash-lite'),
+      prompt: `
+        <question>
+        ${input}
+        </question>
 
-    return capitalResult.text;
+        Answer the question.
+        Reply only with the capital of the country.
+      `,
+    });
+
+    const capitalResult = aiResult.text;
+    console.log('ep:', { capitalResult });
+
+    return capitalResult;
   },
   scorers: [
     {

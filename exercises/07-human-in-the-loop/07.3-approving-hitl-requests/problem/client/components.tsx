@@ -21,13 +21,11 @@ export const Message = ({
 }: {
   role: string;
   parts: MyMessage['parts'];
-  // TODO: pass down a function that will be called
-  // when the user clicks the approve or reject button.
-  onActionRequest: TODO;
-  // TODO: pass down a set of action IDs that have
-  // had decisions made. Calculate these in the
-  // component above.
-  actionIdsWithDecisionsMade: TODO;
+  onActionRequest: (
+    action: Action,
+    decision: 'approve' | 'reject',
+  ) => void;
+  actionIdsWithDecisionsMade: Set<string>;
 }) => (
   <div className="my-4">
     {parts.map((part) => {
@@ -49,9 +47,8 @@ export const Message = ({
       }
 
       if (part.type === 'data-action-start') {
-        // TODO: check if the action ID has had a decision
-        // made. If it has, don't show the buttons below.
-        const hasDecisionBeenMade = TODO;
+        const hasDecisionBeenMade =
+          actionIdsWithDecisionsMade.has(part.data.action.id);
 
         return (
           <div key={part.id} className="mb-4">
@@ -86,10 +83,23 @@ export const Message = ({
             </div>
             {hasDecisionBeenMade ? null : (
               <>
-                {/* TODO: render the buttons below if the
-                action ID has not had a decision made.
-                Use the onActionRequest prop to handle
-                the button clicks. */}
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                  onClick={() => {
+                    onActionRequest(part.data.action, 'approve');
+                  }}
+                >
+                  Approve
+                </button>
+                <button
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                  onClick={() => {
+                    onActionRequest(part.data.action, 'reject');
+                    console.log('ep:', 1);
+                  }}
+                >
+                  Reject
+                </button>
               </>
             )}
           </div>

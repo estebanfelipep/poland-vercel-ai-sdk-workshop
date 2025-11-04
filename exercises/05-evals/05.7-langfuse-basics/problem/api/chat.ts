@@ -20,7 +20,10 @@ export const POST = async (req: Request): Promise<Response> => {
   // TODO: declare the trace variable using the langfuse.trace method,
   // and pass it the following arguments:
   // - sessionId: body.id
-  const trace = TODO;
+  const trace = langfuse.trace({
+    sessionId: body.id,
+    userId: '1',
+  });
 
   const mostRecentMessage = messages[messages.length - 1];
 
@@ -62,17 +65,27 @@ export const POST = async (req: Request): Promise<Response> => {
     // - isEnabled: true
     // - functionId: 'your-name-here'
     // - metadata: { langfuseTraceId: trace.id }
-    experimental_telemetry: TODO,
+    experimental_telemetry: {
+      isEnabled: true,
+      functionId: 'title-generation',
+      metadata: { langfuseTraceId: trace.id },
+    },
   });
 
   const streamTextResult = streamText({
     model: google('gemini-2.0-flash'),
+    system:
+      'Be concise, short and informative in your responses.',
     messages: modelMessages,
     // TODO: declare the experimental_telemetry property using the following object:
     // - isEnabled: true
     // - functionId: 'your-name-here'
     // - metadata: { langfuseTraceId: trace.id }
-    experimental_telemetry: TODO,
+    experimental_telemetry: {
+      isEnabled: true,
+      functionId: 'chat-response-generation',
+      metadata: { langfuseTraceId: trace.id },
+    },
   });
 
   const stream = streamTextResult.toUIMessageStream({
@@ -83,7 +96,7 @@ export const POST = async (req: Request): Promise<Response> => {
 
       // TODO: flush the langfuse traces using the langfuse.flushAsync method
       // and await the result
-      TODO;
+      await langfuse.flushAsync();
     },
   });
 

@@ -9,7 +9,6 @@ import { google } from '@ai-sdk/google';
 import { join } from 'node:path';
 import z from 'zod';
 import { createPersistenceLayer } from '../create-persistence-layer.ts';
-import type { MyMessage } from '../chat.ts';
 import { formatModelMessages } from '../utils.ts';
 
 type CalendarEvent = {

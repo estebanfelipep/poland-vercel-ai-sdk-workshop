@@ -73,14 +73,14 @@ const myEmbeddingModel = google.textEmbeddingModel(
 export const embedTsDocs = async (
   cacheKey: string,
 ): Promise<Embeddings> => {
-  const docs = await loadTsDocs();
-
   const existingEmbeddings =
     await getExistingEmbeddings(cacheKey);
 
   if (existingEmbeddings) {
     return existingEmbeddings;
   }
+
+  const docs = await loadTsDocs();
 
   const embeddings: Embeddings = {};
   const docValues = Array.from(docs.values());
@@ -147,13 +147,29 @@ const embedLotsOfText = async (
   }[]
 > => {
   // TODO: Implement this function by using the embedMany function
-  throw new Error('Not implemented');
+  const result = await embedMany({
+    model: myEmbeddingModel,
+    values: documents.map((doc) => doc.content),
+    maxRetries: 0,
+  });
+
+  return result.embeddings.map((embedding, index) => ({
+    filename: documents[index]!.filename,
+    content: documents[index]!.content,
+    embedding,
+  }));
 };
 
 const embedOnePieceOfText = async (
   text: string,
 ): Promise<number[]> => {
   // TODO: Implement this function by using the embed function
+  const result = await embed({
+    model: myEmbeddingModel,
+    value: text,
+  });
+
+  return result.embedding;
 };
 
 const calculateScore = (
@@ -161,4 +177,5 @@ const calculateScore = (
   embedding: number[],
 ): number => {
   // TODO: Implement this function by using the cosineSimilarity function
+  return cosineSimilarity(queryEmbedding, embedding);
 };

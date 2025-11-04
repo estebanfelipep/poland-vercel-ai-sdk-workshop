@@ -35,7 +35,13 @@ export const Message = ({
       // TODO: Handle the reasoning part. You can handle it
       // in the same way as the text above - though it should
       // perhaps look a little greyed out.
-      TODO;
+      if (part.type === 'reasoning') {
+        return (
+          <div className="text-sm text-gray-400 prose prose-invert">
+            <ReactMarkdown>{part.text}</ReactMarkdown>
+          </div>
+        );
+      }
 
       if (part.type === 'data-task') {
         return <TaskItem key={part.id} task={part.data} />;

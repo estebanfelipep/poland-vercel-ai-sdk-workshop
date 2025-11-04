@@ -79,6 +79,7 @@ export const POST = async (req: Request): Promise<Response> => {
       let step = 0;
 
       while (step < 10) {
+        console.log('ep: In loop', { step });
         const tasksResult = streamObject({
           model: google('gemini-2.0-flash'),
           system: `
@@ -245,6 +246,7 @@ export const POST = async (req: Request): Promise<Response> => {
 
         step++;
       }
+      console.log('ep:', { step });
     },
     onError(error) {
       console.error(error);

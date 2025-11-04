@@ -34,7 +34,9 @@ export const Message = ({
 
       // TODO: Render the task item by using the TaskItem component
       // below. Feel free to adjust it to your visual style!
-      TODO;
+      if (part.type === 'data-task') {
+        return <TaskItem key={part.id} task={part.data} />;
+      }
     })}
   </div>
 );

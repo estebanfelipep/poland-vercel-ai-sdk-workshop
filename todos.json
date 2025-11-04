@@ -1,0 +1,39 @@
+{
+  "todos": {
+    "52e83108-525e-4d96-bfd6-782a8757404a": {
+      "id": "52e83108-525e-4d96-bfd6-782a8757404a",
+      "title": "New todo",
+      "completed": false,
+      "createdAt": "2025-11-03T17:13:41.833Z",
+      "updatedAt": "2025-11-03T17:13:41.833Z"
+    },
+    "1eb0a9a2-004c-4719-b5b3-397e8ae05794": {
+      "id": "1eb0a9a2-004c-4719-b5b3-397e8ae05794",
+      "title": "test",
+      "completed": false,
+      "createdAt": "2025-11-04T13:45:55.293Z",
+      "updatedAt": "2025-11-04T13:45:55.293Z"
+    },
+    "c23c7079-917a-4144-9a57-60fd69757573": {
+      "id": "c23c7079-917a-4144-9a57-60fd69757573",
+      "title": "Test Event",
+      "completed": false,
+      "createdAt": "2025-11-04T14:08:02.408Z",
+      "updatedAt": "2025-11-04T14:08:02.408Z"
+    },
+    "69abd7b9-559f-4e0c-8b6e-064b69653af5": {
+      "id": "69abd7b9-559f-4e0c-8b6e-064b69653af5",
+      "title": "Dummy todo",
+      "completed": false,
+      "createdAt": "2025-11-04T17:30:10.633Z",
+      "updatedAt": "2025-11-04T17:30:10.633Z"
+    },
+    "b1177b08-236e-45a4-901d-aab457bdd985": {
+      "id": "b1177b08-236e-45a4-901d-aab457bdd985",
+      "title": "Get all todos",
+      "completed": false,
+      "createdAt": "2025-11-04T22:28:42.067Z",
+      "updatedAt": "2025-11-04T22:28:42.067Z"
+    }
+  }
+}

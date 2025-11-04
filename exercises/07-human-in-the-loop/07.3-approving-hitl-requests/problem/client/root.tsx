@@ -7,7 +7,7 @@ import type { Action, MyMessage } from '../api/chat.ts';
 
 const App = () => {
   const { messages, sendMessage } = useChat<MyMessage>({});
-
+  console.log('ep: Messages', messages);
   const [input, setInput] = useState(
     `Send an email to team@aihero.dev saying what a fantastic AI workshop I'm currently attending. Thank them for the workshop.`,
   );
@@ -17,9 +17,11 @@ const App = () => {
       (message) => message.parts,
     );
 
-    // TODO: calculate the set of action IDs where we have
-    // made a decision.
-    const decisionsByActionId = TODO;
+    const decisionsByActionId = new Set(
+      allMessageParts
+        .filter((part) => part.type === 'data-action-decision')
+        .map((part) => part.data.actionId),
+    );
 
     return decisionsByActionId;
   }, [messages]);
@@ -36,13 +38,29 @@ const App = () => {
           parts={message.parts}
           actionIdsWithDecisionsMade={actionIdsWithDecisionsMade}
           onActionRequest={(action, decision) => {
-            // TODO: if the user has approved the action,
-            // use sendMessage to send a data-action-decision
-            // part with the action ID and the decision.
-            //
-            // TODO: if the user has rejected the action,
-            // save the action in the state so that we can
-            // show the feedback input.
+            if (decision === 'approve') {
+              sendMessage({
+                parts: [
+                  {
+                    type: 'data-action-decision',
+                    data: {
+                      actionId: action.id,
+                      decision: {
+                        type: 'approve',
+                      },
+                    },
+                  },
+                  // {
+                  //   type: 'text',
+                  //   text: 'Send it.',
+                  // },
+                ],
+              });
+            } else {
+              console.log('ep:', 2);
+              setInput('');
+              setActionGivingFeedbackOn(action);
+            }
           }}
         />
       ))}
@@ -52,11 +70,28 @@ const App = () => {
         onChange={(e) => setInput(e.target.value)}
         onSubmit={(e) => {
           e.preventDefault();
+          console.log('ep:', { actionGivingFeedbackOn });
+          if (actionGivingFeedbackOn) {
+            console.log('ep:', 'love');
+            sendMessage({
+              parts: [
+                {
+                  type: 'data-action-decision',
+                  data: {
+                    actionId: actionGivingFeedbackOn.id,
+                    decision: {
+                      type: 'reject',
+                      reason: input,
+                    },
+                  },
+                },
+              ],
+            });
 
-          // TODO: if the user is giving feedback on an action,
-          // send a data-action-decision part with the action ID
-          // and the reason for the rejection.
-
+            setActionGivingFeedbackOn(null);
+            setInput('');
+            return;
+          }
           sendMessage({
             text: input,
           });

@@ -27,12 +27,14 @@ export const POST = async (req: Request): Promise<Response> => {
     });
   }
 
-  const chat = TODO; // TODO: Get the existing chat
+  const chat = await getChat(id); // TODO: Get the existing chat
 
   if (!chat) {
     // TODO: If the chat doesn't exist, create it with the id
+    createChat(id, [mostRecentMessage]);
   } else {
     // TODO: Otherwise, append the most recent message to the chat
+    appendToChatMessages(id, [mostRecentMessage]);
   }
 
   // TODO: wait for the stream to finish and append the
@@ -41,8 +43,17 @@ export const POST = async (req: Request): Promise<Response> => {
     model: google('gemini-2.0-flash-001'),
     messages: convertToModelMessages(messages),
   });
-
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onFinish: async ({ responseMessage, messages }) => {
+      console.log('ep:', { messages });
+      // Generate an ID for the assistant message if it doesn't have one
+      const messageWithId = {
+        ...responseMessage,
+        id: responseMessage.id || crypto.randomUUID(),
+      };
+      await appendToChatMessages(id, [messageWithId]);
+    },
+  });
 };
 
 export const GET = async (req: Request): Promise<Response> => {
