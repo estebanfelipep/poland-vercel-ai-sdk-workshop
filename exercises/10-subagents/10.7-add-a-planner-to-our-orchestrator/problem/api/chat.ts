@@ -119,7 +119,11 @@ export const POST = async (req: Request): Promise<Response> => {
       // TODO: Before the loop, call streamText to generate a plan.
       // Use the getPlanSystemPrompt function to create the system prompt.
       // Pass in the formatted messages to create the prompt.
-      const planResult = TODO;
+      const planResult = streamText({
+        model: google('gemini-2.0-flash'),
+        system: getPlanSystemPrompt(),
+        prompt: formattedMessages,
+      });
 
       // TODO: Write the plan to the client by monitoring the plan's
       // textStream.
@@ -127,10 +131,39 @@ export const POST = async (req: Request): Promise<Response> => {
       // reasoning-start, reasoning-delta, and reasoning-end.
       // These work the same as text-start, text-delta, and text-end,
       // but are for reasoning parts.
-      TODO;
+      const reasoningId = crypto.randomUUID();
+
+      writer.write({
+        type: 'reasoning-start',
+        id: reasoningId,
+      });
+
+      for await (const chunk of planResult.textStream) {
+        writer.write({
+          type: 'reasoning-delta',
+          id: reasoningId,
+          delta: chunk,
+        });
+      }
+
+      writer.write({
+        type: 'reasoning-end',
+        id: reasoningId,
+      });
+
+      await planResult.consumeStream();
 
       // TODO: Update the diary with the plan.
-      diary = TODO;
+      diary = [
+        diary,
+        '',
+        `A plan was generated:`,
+        await planResult.text,
+      ]
+        .join('\n')
+        .trim();
+
+      console.log('ep: diary', diary);
 
       while (step < 10) {
         const tasksResult = streamObject({
