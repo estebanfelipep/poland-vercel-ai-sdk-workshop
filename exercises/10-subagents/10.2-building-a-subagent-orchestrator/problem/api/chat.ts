@@ -81,7 +81,30 @@ export const POST = async (req: Request): Promise<Response> => {
       //
       // The system prompt is in the getSystemPrompt function above.
       // The prompt should be the formatted messages above.
-      const tasksResult = TODO;
+      const tasksResult = await generateObject({
+        model: google('gemini-2.0-flash'),
+        system: getSystemPrompt(),
+        prompt: `Initial prompt:${formattedMessages}`,
+        schema: z.object({
+          tasks: z.array(
+            z.object({
+              subagent: z
+                .enum([
+                  'todos-agent',
+                  'student-notes-manager',
+                  'song-finder-agent',
+                  'scheduler-agent',
+                ])
+                .describe('The subagent to use'),
+              task: z
+                .string()
+                .describe(
+                  'A detailed description of the task to perform',
+                ),
+            }),
+          ),
+        }),
+      });
 
       const tasks = tasksResult.object.tasks;
 

@@ -30,11 +30,12 @@ const App = () => {
   const { messages, sendMessage } = useChat<MyMessage>({
     transport: new DefaultChatTransport({
       body: () => ({
-        subagent: bodyRef.current.subagent,
+        // subagent: bodyRef.current.subagent,
+        subagent,
       }),
     }),
   });
-
+  console.log('ep:', { subagent });
   const [input, setInput] = useState(
     `Find all of my lessons for tomorrow and pull up all of their notes.`,
   );

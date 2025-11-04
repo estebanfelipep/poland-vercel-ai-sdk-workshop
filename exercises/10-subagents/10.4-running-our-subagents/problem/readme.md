@@ -1,3 +1,13 @@
+## EP Notes
+
+I initially thought that the while loop present in the exercise (in api/chat.ts) was not needed. But this is an agent, and when a task depend on a previous task, a while loop is definitely needed.
+
+For example, the user query is something along: "Create an event for tomorrow and a new to do item with the details of such event".
+
+The assistant has to first create the event, that would happen in a first iteration of the loop, and then on the second one, the assistant will be able to create the todo item.
+
+--
+
 OK, we've got the basics done. Now let's go and execute the tasks.
 
 The way it's going to work is:
