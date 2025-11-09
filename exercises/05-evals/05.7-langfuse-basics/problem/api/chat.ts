@@ -40,6 +40,12 @@ export const POST = async (req: Request): Promise<Response> => {
     })
     .join('');
 
+  // There will be two spans created in this function:
+  // - one for the title generation
+  // - one for the chat response generation
+  //
+  // Both spans will be children of the trace created above
+
   const titleResult = generateText({
     model: google('gemini-2.0-flash-lite'),
     prompt: `
