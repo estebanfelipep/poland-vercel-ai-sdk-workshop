@@ -106,6 +106,11 @@ export const POST = async (req: Request): Promise<Response> => {
   const stream = createUIMessageStream({
     generateId: () => 'love',
     execute: async ({ writer }) => {
+      // Because we are merging other streams, we need to send the start event first.
+      writer.write({
+        type: 'start',
+      });
+
       writer.write({
         type: 'data-slack-message',
         data: 'Starting Slack message generation...',
@@ -141,31 +146,37 @@ export const POST = async (req: Request): Promise<Response> => {
             `,
       });
 
-      const textPartId = crypto.randomUUID();
+      // Manually sending text parts was the initial
+      // workaround I tried when the merge was not working.
 
-      writer.write({
-        type: 'text-start',
-        id: textPartId,
-      });
+      // const textPartId = crypto.randomUUID();
 
-      for await (const part of finalSlackAttempt.textStream) {
-        writer.write({
-          type: 'text-delta',
-          delta: part,
-          id: textPartId,
-        });
-      }
+      // writer.write({
+      //   type: 'text-start',
+      //   id: textPartId,
+      // });
 
-      writer.write({
-        type: 'text-end',
-        id: textPartId,
-      });
+      // for await (const part of finalSlackAttempt.textStream) {
+      //   writer.write({
+      //     type: 'text-delta',
+      //     delta: part,
+      //     id: textPartId,
+      //   });
+      // }
 
-      // THIS DIDN'T WORK FOR SOME REASON.
-      // writer.merge(finalSlackAttempt.toUIMessageStream());
+      // writer.write({
+      //   type: 'text-end',
+      //   id: textPartId,
+      // });
 
-      // I even tried to replicate the official example but no luck.
-      // Official example: https://ai-sdk.dev/docs/ai-sdk-ui/streaming-data#streaming-data-from-the-server
+      // THIS DIDN'T AT THE BEGINNING
+      // I was missing sending the start event at the beginning of the execute function
+      // and also setting sendStart: false here (because we already sent it).
+      writer.merge(
+        finalSlackAttempt.toUIMessageStream({
+          sendStart: false,
+        }),
+      );
 
       return;
     },
