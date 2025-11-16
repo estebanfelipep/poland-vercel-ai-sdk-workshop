@@ -23,6 +23,9 @@ export const Message = ({
 
   const text = parts
     .map((part) => {
+      if (part.type === 'dynamic-tool') {
+        return `**Tool name:** ${part.toolName}\n\n`;
+      }
       if (part.type === 'text') {
         return part.text;
       }
